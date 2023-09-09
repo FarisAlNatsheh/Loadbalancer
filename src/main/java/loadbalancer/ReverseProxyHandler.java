@@ -18,7 +18,7 @@ public class ReverseProxyHandler implements HttpHandler {
         String response = "Received";
 
         exchange.sendResponseHeaders(200, 0);
-        System.out.println("Target response: "+targetResponse);
+        //System.out.println("Target response: "+targetResponse);
         os.write(targetResponse.getBytes());
         os.close();
     }

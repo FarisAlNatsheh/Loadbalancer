@@ -1,6 +1,6 @@
 package loadbalancer;
 
-import ServerUtil.Server;
+import ServerUtil.Service;
 import com.sun.net.httpserver.HttpExchange;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,17 +11,17 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class Loadbalancer {
-    private List<Server> serverList = new ArrayList<>();
+    private List<Service> serviceList = new ArrayList<>();
     private int currentServerIndex;
-
-    public Server getCurrentServer(){
+    private String endpoint;
+    public Service getCurrentServer(){
         currentServerIndex++;
-        if(currentServerIndex >= serverList.size())
+        if(currentServerIndex > serviceList.size())
             currentServerIndex = 0;
-        return serverList.get(currentServerIndex);
+        return serviceList.get(currentServerIndex);
     }
     public String handleRequest(HttpExchange exchange){
-       return serverList.get(currentServerIndex).forwardRequest(exchange);
+       return getCurrentServer().forwardRequest(exchange, endpoint);
     }
 
 }
