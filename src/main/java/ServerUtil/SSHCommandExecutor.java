@@ -17,7 +17,7 @@ public class SSHCommandExecutor {
         this.port = port;
     }
 
-    public void executeCommand(String command) {
+    public String executeCommand(String command) {
         try {
             JSch jsch = new JSch();
 
@@ -28,7 +28,6 @@ public class SSHCommandExecutor {
 
             // Connect to the SSH server
             session.connect();
-
             // Create a SSH channel
             Channel channel = session.openChannel("exec");
 
@@ -37,7 +36,7 @@ public class SSHCommandExecutor {
 
             // Set up input and output streams
             channel.setInputStream(null);
-            ((ChannelExec) channel).setErrStream(System.err);
+           // ((ChannelExec) channel).setErrStream(System.err);
 
             InputStream in = channel.getInputStream();
 
@@ -47,15 +46,25 @@ public class SSHCommandExecutor {
             // Read the output of the command
             byte[] buffer = new byte[1024];
             int bytesRead;
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
             while ((bytesRead = in.read(buffer)) > 0) {
-                System.out.write(buffer, 0, bytesRead);
+                outputStream.write(buffer, 0, bytesRead);
             }
+
+            String result = outputStream.toString("UTF-8"); // Convert the bytes to a string
+
+            // Close the input stream and the output stream (if needed)
+            in.close();
+            outputStream.close();
 
             // Disconnect from the channel and session
             channel.disconnect();
             session.disconnect();
+            return result;
         } catch (JSchException | IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            return e.toString();
         }
     }
 }

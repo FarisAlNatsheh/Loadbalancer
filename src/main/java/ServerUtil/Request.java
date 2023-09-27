@@ -16,28 +16,30 @@ public class Request {
         URL url = new URL(urlString);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod(exchange.getRequestMethod());
+
         exchange.getRequestHeaders().forEach((key, values) -> {
             for (String value : values) {
                 connection.setRequestProperty(key, value);
             }
         });
         connection.setDoOutput(true);
+
+
         // Get the request body from the exchange
-        InputStream requestBody = exchange.getRequestBody();
-
-        // Copy the request body to the output stream of the HttpURLConnection
-        try (OutputStream out = connection.getOutputStream()) {
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = requestBody.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
+        if(exchange.getRequestMethod().equals("POST")) {
+            InputStream requestBody = exchange.getRequestBody();
+            // Copy the request body to the output stream of the HttpURLConnection
+            try (OutputStream out = connection.getOutputStream()) {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = requestBody.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+            } finally {
+                requestBody.close();
             }
-        } finally {
-            requestBody.close();
         }
-
         int responseCode = connection.getResponseCode();
-
         // System.out.println("Response Code: " + responseCode);
 
         StringBuilder response = new StringBuilder();
@@ -48,7 +50,6 @@ public class Request {
                 response.append(inputLine);
             }
         }
-
         connection.disconnect();
 
         return response.toString();

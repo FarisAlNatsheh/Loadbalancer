@@ -8,14 +8,17 @@ import java.io.IOException;
 
 @Data
 @AllArgsConstructor
-public class Service {
+public class Endpoint {
     private String hostIP;
     private int port;
+    private String password;
+    private String username;
 
     public String forwardRequest(HttpExchange exchange, String endpoint){
         try {
             return new Request(exchange).sendRequest("http://"+hostIP+":"+port+"/"+endpoint);
         } catch (IOException e) {
+            System.out.println("http://"+hostIP+":"+port+"/"+endpoint);
             return e.getMessage();
         }
     }
