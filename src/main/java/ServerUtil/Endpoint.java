@@ -18,7 +18,8 @@ public class Endpoint {
         try {
             return new Request(exchange).sendRequest("http://"+hostIP+":"+port+"/"+endpoint);
         } catch (IOException e) {
-            System.out.println("http://"+hostIP+":"+port+"/"+endpoint);
+//            System.out.println("http://"+hostIP+":"+port+"/"+endpoint);
+//            System.out.println(e);
             return e.getMessage();
         }
     }

@@ -19,6 +19,9 @@ public class Loadbalancer {
             currentServerIndex = 0;
         return endpointList.get(currentServerIndex);
     }
+    public List<Endpoint> getList(){
+        return endpointList;
+    }
     public String handleRequest(HttpExchange exchange){
        return getCurrentServer().forwardRequest(exchange, endpoint);
     }

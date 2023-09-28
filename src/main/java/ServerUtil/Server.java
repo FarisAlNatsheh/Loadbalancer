@@ -14,9 +14,9 @@ import java.util.UUID;
 @Data
 @RequiredArgsConstructor
 public class Server {
-    private final int STARTING_PORT=9000;
-    private final int MAX_CONTAINERS=5;
-    private final int MAX_USAGE=15;
+    private final int STARTING_PORT = 9000;
+    private final int MAX_CONTAINERS = 50;
+    private final int MAX_USAGE = 5;
 
     @NonNull
     private String ip;
@@ -33,22 +33,46 @@ public class Server {
     @NonNull
     private int startingPort;
 
-    private Entrypoint n = new Entrypoint("", 8081);
+    @NonNull
+    private Entrypoint n;
+
+    public List<String> containers() {
+        return containers;
+    }
+
     public String sendCommand(String command) {
         return new SSHCommandExecutor(ip, user, pass, port).executeCommand(command);
     }
 
 
     public void checkContainers() {
+        System.out.println("I am " + ip);
         if (containers.size() == 0)
             addContainer();
-        for (int i = 0; i < containers.size(); i++) {
 
-            if (Double.parseDouble(getCPU(containers.get(i)).replace("%", "")) > MAX_USAGE) {
+        for (int i = 0; i < containers.size(); i++) {
+            int times = 0;
+            for (int j = 0; j < 3; j++) {
+                if (Math.floor(Double.parseDouble(getCPU(containers.get(i)).replace("%", ""))) <= 0 && containers.size() > 1) {
+                    times++;
+                }
+            }
+            if (Math.ceil(Double.parseDouble(getCPU(containers.get(i)).replace("%", ""))) >= MAX_USAGE) {
                 addContainer();
-                restartReverseProxy();
+                break;
+                //restartReverseProxy();
+            }
+            if (times == 3) {
+                removeContainer(containers.get(i));
+                containers.remove(i);
+                i--;
             }
         }
+    }
+
+    public void removeContainer(String containerName) {
+        System.out.println("Removed unused container " + containerName);
+        sendCommand("echo " + getPass() + " | sudo -S docker kill " + containerName);
     }
 
     public void addContainer() {
@@ -73,18 +97,18 @@ public class Server {
         n.stopServer();
         List<Endpoint> endpointList = new ArrayList<>();
         for (int i = 0; i < containers.size(); i++) {
-            endpointList.add(new Endpoint(ip, startingPort - i-1, pass, user));
+            endpointList.add(new Endpoint(ip, startingPort - i - 1, pass, user));
         }
-
-
-
         n.startServer(endpointList, "");
     }
-    public void startReverseProxy(){
+
+    public void startReverseProxy() {
+        // addExitHook();
         List<Endpoint> endpointList = new ArrayList<>();
         for (int i = 0; i < containers.size(); i++) {
-            endpointList.add(new Endpoint(ip, startingPort - i-1, pass, user));
+            endpointList.add(new Endpoint(ip, startingPort - i - 1, pass, user));
         }
+        //n.stopServer();
         n.startServer(endpointList, "");
     }
 

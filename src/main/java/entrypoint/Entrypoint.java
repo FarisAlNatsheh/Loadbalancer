@@ -8,6 +8,7 @@ import lombok.Data;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Collections;
 import java.util.List;
 
 public class Entrypoint {
@@ -28,12 +29,15 @@ public class Entrypoint {
         }
     }
     public void startServer(List<Endpoint> endpointList, String path) {
-
         loadbalancer = new Loadbalancer(endpointList,0, endpoint);
         // Create a context for handling requests
         server.createContext("/"+path, new ReverseProxyHandler(loadbalancer));
         server.start();
         System.out.println("Server is running on port 8081");
+        for(int i =0 ;i < endpointList.size();i++){
+            System.out.println(endpointList.get(i).getHostIP()+":"+endpointList.get(i).getPort());
+        }
+        System.out.println();
     }
     public void stopServer() {
         server.removeContext("/");
@@ -45,4 +49,5 @@ public class Entrypoint {
         }
 
     }
+
 }
